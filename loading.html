@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>A Colheita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Roboto+Condensed:wght@300;400;700&family=Caveat:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{
+  width:100%;height:100%;
+  overflow:hidden;
+  background:#0D0D12;
+  color:#D4C8B0;
+  font-family:'Roboto Condensed',sans-serif;
+}
+
+/* --- Animations --- */
+@keyframes fog-drift-1{
+  0%{transform:translateX(-10%) translateY(0)}
+  50%{transform:translateX(10%) translateY(-3%)}
+  100%{transform:translateX(-10%) translateY(0)}
+}
+@keyframes fog-drift-2{
+  0%{transform:translateX(10%) translateY(-2%)}
+  50%{transform:translateX(-10%) translateY(2%)}
+  100%{transform:translateX(10%) translateY(-2%)}
+}
+@keyframes ember-rise{
+  0%{transform:translateY(0) translateX(0);opacity:0}
+  10%{opacity:0.8}
+  90%{opacity:0.3}
+  100%{transform:translateY(-100vh) translateX(30px);opacity:0}
+}
+@keyframes ritual-rotate{
+  0%{transform:rotate(0deg)}
+  100%{transform:rotate(360deg)}
+}
+@keyframes ritual-pulse{
+  0%,100%{opacity:0.03}
+  50%{opacity:0.08}
+}
+@keyframes root-grow{
+  0%{stroke-dashoffset:1000}
+  100%{stroke-dashoffset:0}
+}
+@keyframes flicker{
+  0%,100%{opacity:1}42%{opacity:1}43%{opacity:0.85}44%{opacity:1}
+  72%{opacity:1}73%{opacity:0.7}73.5%{opacity:1}74%{opacity:0.9}74.5%{opacity:1}
+}
+@keyframes burn-glow{
+  0%,100%{text-shadow:0 0 10px rgba(139,0,0,0.4),0 0 20px rgba(139,0,0,0.2)}
+  50%{text-shadow:0 0 20px rgba(139,0,0,0.7),0 0 40px rgba(139,0,0,0.4),0 0 60px rgba(212,165,116,0.2)}
+}
+@keyframes vignette-breathe{
+  0%,100%{opacity:0.8}
+  50%{opacity:1}
+}
+@keyframes progress-shimmer{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(200%)}
+}
+@keyframes grain{
+  0%,100%{transform:translate(0,0)}
+  10%{transform:translate(-2%,-2%)}20%{transform:translate(1%,3%)}
+  30%{transform:translate(-3%,1%)}40%{transform:translate(3%,-1%)}
+  50%{transform:translate(-1%,2%)}60%{transform:translate(2%,-3%)}
+  70%{transform:translate(-2%,1%)}80%{transform:translate(1%,-2%)}
+  90%{transform:translate(-1%,3%)}
+}
+@keyframes spiral-draw{
+  0%{stroke-dashoffset:126}
+  100%{stroke-dashoffset:0}
+}
+@keyframes spiral-draw-sm{
+  0%{stroke-dashoffset:82}
+  100%{stroke-dashoffset:0}
+}
+@keyframes spiral-draw-xs{
+  0%{stroke-dashoffset:38}
+  100%{stroke-dashoffset:0}
+}
+@keyframes eye-blink{
+  0%,40%,44%,100%{transform:scaleY(1)}
+  42%{transform:scaleY(0.1)}
+}
+@keyframes fade-in{
+  0%{opacity:0;transform:translateY(15px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+@keyframes fade-in-blur{
+  0%{opacity:0;filter:blur(10px);transform:scale(0.8)}
+  100%{opacity:1;filter:blur(0);transform:scale(1)}
+}
+@keyframes ink-appear{
+  0%{opacity:0;filter:blur(4px)}
+  100%{opacity:0.5;filter:blur(0)}
+}
+
+/* --- Layers --- */
+.screen{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  overflow:hidden;
+  background:radial-gradient(ellipse at center,#2C2416 0%,#15110A 40%,#0D0D12 100%);
+}
+.layer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+.grain{opacity:0.04;animation:grain 0.5s steps(5) infinite}
+.fog1{
+  background:linear-gradient(180deg,transparent 0%,rgba(74,80,67,0.08) 40%,rgba(74,80,67,0.15) 70%,transparent 100%);
+  animation:fog-drift-1 25s ease-in-out infinite;
+}
+.fog2{
+  background:linear-gradient(200deg,transparent 0%,rgba(44,36,22,0.1) 30%,rgba(74,80,67,0.12) 60%,transparent 100%);
+  animation:fog-drift-2 35s ease-in-out infinite;
+}
+.vignette{
+  background:radial-gradient(ellipse at center,transparent 30%,rgba(13,13,18,0.6) 70%,rgba(13,13,18,0.95) 100%);
+  animation:vignette-breathe 10s ease-in-out infinite;
+}
+.flicker-layer{animation:flicker 8s ease-in-out infinite}
+
+/* --- Ritual symbols --- */
+.ritual-sym{position:absolute;color:#D4C8B0}
+
+/* --- Embers --- */
+.ember{position:absolute;border-radius:50%;bottom:5%}
+
+/* --- Content --- */
+.content{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:10;padding:0 24px;
+}
+.logo{
+  font-family:'Crimson Text',serif;
+  font-size:clamp(2rem,6vw,3.75rem);
+  font-weight:700;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  color:#D4C8B0;
+  animation:fade-in-blur 2s ease-out both,burn-glow 4s ease-in-out infinite;
+  user-select:none;
+  margin-bottom:12px;
+}
+.logo svg{display:inline-block;vertical-align:baseline;margin:0 -2px}
+.subtitle{
+  font-family:'Caveat',cursive;
+  font-size:clamp(1.1rem,3vw,1.5rem);
+  color:rgba(212,165,116,0.8);
+  animation:fade-in 1s ease-out 1.5s both;
+  user-select:none;
+  margin-bottom:20px;
+}
+.server-info{
+  font-family:'Share Tech Mono',monospace;
+  font-size:12px;
+  color:rgba(139,115,85,0.4);
+  animation:fade-in 1s ease-out 1.8s both;
+  margin-bottom:28px;
+  display:flex;align-items:center;gap:12px;
+}
+.server-info .sep{color:rgba(139,0,0,0.4)}
+
+/* --- Progress --- */
+.progress-wrap{
+  width:100%;max-width:400px;
+  animation:fade-in 0.8s ease-out 2.1s both;
+  margin-bottom:10px;
+}
+.progress-track{
+  height:6px;
+  background:rgba(44,36,22,0.5);
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid rgba(139,115,85,0.1);
+}
+.progress-bar{
+  height:100%;border-radius:999px;
+  background:linear-gradient(90deg,#4A1C1C,#8B0000,#6B0F1A);
+  position:relative;
+  transition:width 0.5s ease-out;
+  width:0%;
+}
+.progress-bar::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(212,165,116,0.4),transparent);
+  animation:progress-shimmer 2s linear infinite;
+}
+.progress-labels{
+  display:flex;justify-content:space-between;margin-top:6px;
+  font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(139,115,85,0.5);
+}
+
+/* --- File --- */
+.current-file{
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:rgba(139,115,85,0.3);
+  height:18px;margin-bottom:28px;text-align:center;
+  animation:fade-in 0.8s ease-out 2.4s both;
+  max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+
+/* --- Tips --- */
+.tips{
+  width:100%;max-width:480px;min-height:60px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  animation:fade-in 0.8s ease-out 2.7s both;
+  margin-bottom:28px;
+}
+.tip-category{
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  text-transform:uppercase;letter-spacing:0.2em;
+  color:rgba(139,115,85,0.4);margin-bottom:4px;
+}
+.tip-text{
+  font-family:'Roboto Condensed',sans-serif;font-size:14px;
+  color:rgba(212,200,176,0.7);font-style:italic;line-height:1.5;
+  transition:opacity 0.5s ease;
+}
+
+/* --- Handwritten note --- */
+.hand-note{
+  font-family:'Caveat',cursive;font-size:14px;
+  color:rgba(212,165,116,0.4);
+  transform:rotate(-2deg);user-select:none;
+  animation:ink-appear 2s ease-out 4s both;
+}
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <!-- Film grain -->
+  <svg class="layer grain"><filter id="gf"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="120%" height="120%" x="-10%" y="-10%" filter="url(#gf)"/></svg>
+
+  <!-- Fog -->
+  <div class="layer fog1"></div>
+  <div class="layer fog2"></div>
+
+  <!-- Root veins -->
+  <svg style="position:absolute;bottom:0;left:0;width:100%;pointer-events:none" height="200" viewBox="0 0 1920 200" preserveAspectRatio="none" fill="none">
+    <path d="M0 200 Q200 180 400 150 Q600 100 800 120 Q1000 140 1200 90 Q1400 60 1600 100 Q1800 130 1920 80" stroke="#4A5043" stroke-width="1.5" opacity="0.15" stroke-dasharray="1000" stroke-dashoffset="1000" style="animation:root-grow 12s ease-out 0s forwards"/>
+    <path d="M0 200 Q150 170 300 160 Q500 130 700 140 Q900 150 1100 110 Q1300 80 1500 120 Q1700 150 1920 100" stroke="#4A5043" stroke-width="1.3" opacity="0.13" stroke-dasharray="1000" stroke-dashoffset="1000" style="animation:root-grow 12s ease-out 1.5s forwards"/>
+    <path d="M0 200 Q300 190 600 170 Q800 150 1000 130 Q1200 120 1400 140 Q1600 160 1920 120" stroke="#4A5043" stroke-width="1.1" opacity="0.11" stroke-dasharray="1000" stroke-dashoffset="1000" style="animation:root-grow 12s ease-out 3s forwards"/>
+    <path d="M0 200 Q100 195 250 185 Q400 170 550 160 Q700 155 900 145 Q1100 135 1300 150 Q1500 155 1920 140" stroke="#4A5043" stroke-width="0.9" opacity="0.09" stroke-dasharray="1000" stroke-dashoffset="1000" style="animation:root-grow 12s ease-out 4.5s forwards"/>
+    <path d="M0 200 Q250 185 500 175 Q750 160 1000 155 Q1250 145 1500 130 Q1750 145 1920 160" stroke="#4A5043" stroke-width="0.7" opacity="0.07" stroke-dasharray="1000" stroke-dashoffset="1000" style="animation:root-grow 12s ease-out 6s forwards"/>
+  </svg>
+
+  <!-- Ritual background symbols -->
+  <div class="ritual-sym" style="top:8%;left:5%;animation:ritual-rotate 90s linear infinite,ritual-pulse 8s ease-in-out infinite">
+    <svg width="80" height="80" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="28" stroke="currentColor" stroke-width="0.5" opacity="0.6"/><circle cx="30" cy="30" r="20" stroke="currentColor" stroke-width="0.5" opacity="0.4"/><circle cx="30" cy="30" r="12" stroke="currentColor" stroke-width="0.5" opacity="0.3"/><circle cx="30" cy="30" r="4" fill="currentColor" opacity="0.2"/></svg>
+  </div>
+  <div class="ritual-sym" style="top:15%;right:8%;animation:ritual-rotate 120s linear infinite reverse,ritual-pulse 6s ease-in-out infinite">
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><path d="M40 40 C40 35 45 30 50 30 C55 30 60 35 60 40 C60 50 50 60 40 60 C25 60 15 50 15 40 C15 25 25 10 40 10 C60 10 75 25 75 40" stroke="currentColor" stroke-width="0.5" stroke-dasharray="300" stroke-dashoffset="300" style="animation:spiral-draw 3s ease-out forwards"/></svg>
+  </div>
+  <div class="ritual-sym" style="bottom:20%;left:8%;opacity:0.05;animation:ritual-pulse 10s ease-in-out infinite">
+    <svg width="70" height="40" viewBox="0 0 70 40" fill="none"><g style="animation:eye-blink 12s ease-in-out infinite;transform-origin:35px 20px"><path d="M5 20 Q35 0 65 20 Q35 40 5 20Z" stroke="currentColor" stroke-width="0.5" opacity="0.6"/><circle cx="35" cy="20" r="8" stroke="currentColor" stroke-width="0.5" opacity="0.4"/><circle cx="35" cy="20" r="3" fill="currentColor" opacity="0.3"/></g></svg>
+  </div>
+  <div class="ritual-sym" style="bottom:25%;right:6%;animation:ritual-rotate 60s linear infinite,ritual-pulse 7s ease-in-out infinite">
+    <svg width="60" height="80" viewBox="0 0 60 80" fill="none"><path d="M30 80 L30 25 Q30 10 45 5 Q35 15 30 25" stroke="currentColor" stroke-width="0.5" opacity="0.5"/></svg>
+  </div>
+  <div class="ritual-sym" style="top:50%;left:3%;animation:ritual-rotate 100s linear infinite,ritual-pulse 9s ease-in-out infinite">
+    <svg width="50" height="50" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="28" stroke="currentColor" stroke-width="0.5" opacity="0.6"/><circle cx="30" cy="30" r="20" stroke="currentColor" stroke-width="0.5" opacity="0.4"/><circle cx="30" cy="30" r="12" stroke="currentColor" stroke-width="0.5" opacity="0.3"/></svg>
+  </div>
+
+  <!-- Embers (generated by JS) -->
+  <div id="embers"></div>
+
+  <!-- Vignette -->
+  <div class="layer vignette"></div>
+
+  <!-- Flicker -->
+  <div class="layer flicker-layer"></div>
+
+  <!-- Content -->
+  <div class="content">
+    <div class="logo">
+      A C<svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="#D4C8B0" stroke-width="1.5" stroke-dasharray="126" stroke-dashoffset="126" style="animation:spiral-draw 3s ease-out forwards"/><circle cx="24" cy="24" r="13" stroke="#D4C8B0" stroke-width="0.8" opacity="0.5" stroke-dasharray="82" stroke-dashoffset="82" style="animation:spiral-draw-sm 3s ease-out 0.5s forwards"/><circle cx="24" cy="24" r="6" stroke="#D4C8B0" stroke-width="0.5" opacity="0.3" stroke-dasharray="38" stroke-dashoffset="38" style="animation:spiral-draw-xs 3s ease-out 1s forwards"/><circle cx="24" cy="24" r="2" fill="#8B0000" opacity="0.6"/></svg>LHEITA
+    </div>
+    <div class="subtitle">O que a terra d&aacute;, a terra cobra.</div>
+    <div class="server-info">
+      <span id="mapname">...</span>
+      <span class="sep">|</span>
+      <span><span id="maxplayers">32</span> jogadores</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <div class="progress-labels">
+        <span id="progress-pct">0%</span>
+        <span>CARREGANDO</span>
+      </div>
+    </div>
+    <div class="current-file" id="current-file"></div>
+    <div class="tips">
+      <div>
+        <div class="tip-category" id="tip-category">Sussurro</div>
+        <div class="tip-text" id="tip-text"></div>
+      </div>
+    </div>
+    <div class="hand-note">...n&atilde;o se esque&ccedil;a de trancar a porta.</div>
+  </div>
+
+</div>
+
+<script>
+// --- Tips ---
+var tips = [
+  {t:"Os sussurros entre as espigas nem sempre v\u00eam do vento.",c:"Sussurro"},
+  {t:"N\u00e3o colha o que n\u00e3o plantou. A terra lembra.",c:"Aviso"},
+  {t:"Dizem que o velho celeiro guarda mais do que gr\u00e3os.",c:"Lenda"},
+  {t:"A neblina \u00e9 mais densa onde a terra foi profanada.",c:"Sussurro"},
+  {t:"Cuidado com os caminhos que desaparecem ao anoitecer.",c:"Aviso"},
+  {t:"H\u00e1 quem diga que os espantalhos mudam de lugar \u00e0 noite.",c:"Lenda"},
+  {t:"O cheiro de terra molhada \u00e0s vezes esconde algo podre.",c:"Sussurro"},
+  {t:"As ra\u00edzes crescem mais fundo do que qualquer um imagina.",c:"Aviso"},
+  {t:"A \u00faltima colheita nunca foi como as outras.",c:"Lenda"},
+  {t:"Ou\u00e7a o canto dos corvos \u2014 eles sabem o que vem.",c:"Sussurro"},
+  {t:"Use /roll para testes de habilidade durante o roleplay.",c:"Dica"},
+  {t:"Mantenha-se no personagem \u2014 use /looc para falar fora do RP.",c:"Dica"},
+  {t:"Verifique o quadro de avisos na pra\u00e7a para eventos da comunidade.",c:"Dica"},
+  {t:"Respeite o espa\u00e7o dos outros jogadores durante cenas de RP.",c:"Dica"},
+  {t:"Seu invent\u00e1rio \u00e9 limitado \u2014 priorize o essencial.",c:"Dica"},
+  {t:"Converse com os NPCs \u2014 alguns t\u00eam informa\u00e7\u00f5es valiosas.",c:"Dica"},
+  {t:"A economia local depende da sua participa\u00e7\u00e3o. Negocie.",c:"Dica"},
+  {t:"N\u00e3o saia de uma cena de RP sem motivo. Use /looc se precisar.",c:"Dica"},
+  {t:"Documente suas descobertas. O di\u00e1rio do personagem ajuda.",c:"Dica"},
+  {t:"Explore os arredores da fazenda com cuidado ao anoitecer.",c:"Dica"}
+];
+var tipIdx = 0;
+var tipCat = document.getElementById("tip-category");
+var tipText = document.getElementById("tip-text");
+function showTip(){
+  var tip = tips[tipIdx];
+  tipCat.textContent = tip.c;
+  tipText.style.opacity = "0";
+  setTimeout(function(){
+    tipText.textContent = "\u201C" + tip.t + "\u201D";
+    tipText.style.opacity = "1";
+  }, 300);
+  tipIdx = (tipIdx + 1) % tips.length;
+}
+showTip();
+setInterval(showTip, 8000);
+
+// --- Embers ---
+var embersEl = document.getElementById("embers");
+for(var i = 0; i < 14; i++){
+  var e = document.createElement("div");
+  e.className = "ember";
+  e.style.left = (5 + (i * 7) % 90) + "%";
+  e.style.width = e.style.height = (2 + i % 3) + "px";
+  e.style.backgroundColor = i % 3 === 0 ? "#8B0000" : "#D4A574";
+  e.style.opacity = (0.3 + (i % 4) * 0.15);
+  e.style.animation = "ember-rise " + (8 + (i % 5) * 1.5) + "s ease-out " + (i * 0.8) + "s infinite";
+  embersEl.appendChild(e);
+}
+
+// --- GMod callbacks ---
+var filesTotal = 0;
+var filesNeeded = 0;
+var progressBar = document.getElementById("progress-bar");
+var progressPct = document.getElementById("progress-pct");
+var currentFile = document.getElementById("current-file");
+var mapnameEl = document.getElementById("mapname");
+var maxplayersEl = document.getElementById("maxplayers");
+
+function updateProgress(){
+  if(filesTotal === 0) return;
+  var pct = Math.min(100, ((filesTotal - filesNeeded) / filesTotal) * 100);
+  progressBar.style.width = pct + "%";
+  progressPct.textContent = Math.round(pct) + "%";
+}
+
+function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode){
+  if(mapname) mapnameEl.textContent = mapname;
+  if(maxplayers) maxplayersEl.textContent = maxplayers;
+}
+
+function SetFilesTotal(total){
+  filesTotal = total;
+  updateProgress();
+}
+
+function SetFilesNeeded(needed){
+  filesNeeded = needed;
+  updateProgress();
+}
+
+function DownloadingFile(filename){
+  if(!filename) return;
+  var parts = filename.split("/");
+  var name = parts[parts.length - 1];
+  currentFile.textContent = name.length > 40 ? "..." + name.slice(-37) : name;
+}
+
+// --- URL params fallback ---
+var params = new URLSearchParams(window.location.search);
+if(params.get("mapname")) mapnameEl.textContent = params.get("mapname");
+if(params.get("maxplayers")) maxplayersEl.textContent = params.get("maxplayers");
+</script>
+</body>
+</html>
