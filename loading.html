@@ -533,6 +533,27 @@ var params = new URLSearchParams(window.location.search);
 if(params.get("mapname")) mapnameEl.textContent = params.get("mapname");
 if(params.get("maxplayers")) maxplayersEl.textContent = params.get("maxplayers");
 
+// --- Static noise audio ---
+var audioCtx = null;
+function playStatic(duration){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  var sampleRate = audioCtx.sampleRate;
+  var samples = Math.floor(sampleRate * (duration + 80) / 1000);
+  var buffer = audioCtx.createBuffer(1, samples, sampleRate);
+  var data = buffer.getChannelData(0);
+  for(var i = 0; i < samples; i++){
+    data[i] = (Math.random() * 2 - 1) * 0.3;
+  }
+  var src = audioCtx.createBufferSource();
+  src.buffer = buffer;
+  var gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + (duration + 80) / 1000);
+  src.connect(gain);
+  gain.connect(audioCtx.destination);
+  src.start();
+}
+
 // --- Eldritch flash scare ---
 var eldritchPool = document.querySelectorAll("#eldritch-pool > svg");
 var eldritchOverlay = document.getElementById("eldritch-overlay");
@@ -550,6 +571,7 @@ function triggerFlash(){
   flashSymbol.appendChild(svg);
   eldritchOverlay.classList.add("active");
   var duration = 100 + Math.floor(Math.random() * 100);
+  playStatic(duration);
   setTimeout(function(){
     eldritchOverlay.classList.remove("active");
     setTimeout(function(){
